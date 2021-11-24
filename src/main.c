@@ -96,6 +96,7 @@ VOID PatchGG_JP972(LPVOID param) {
             Patch((LPVOID)0x00A5CDE0, "\x90\x90\x90\x90\x90\x90\x90", 7);
             Patch((LPVOID)0x00A5CE10, "\xC3", 1);
             Patch((LPVOID)0x00A5CE40, "\xC3", 1);
+            Patch((LPVOID)0x00D0CDCC, "JP.R7.983.00", 12);
             Log("Patched GG check routines (JP 972)\r\n");
             return;
         }
@@ -106,6 +107,7 @@ VOID PatchGG_JP972(LPVOID param) {
             Patch((LPVOID)0x00A5C050, "\x90\x90\x90\x90\x90\x90\x90", 7);
             Patch((LPVOID)0x00A5CE80, "\xC3", 1);
             Patch((LPVOID)0x00A5CEB0, "\xC3", 1);
+            Patch((LPVOID)0x00D0CDCC, "JP.R7.983.00", 12); 
             Log("Patched GG check routines (JP 974)\r\n");
             return;
         }
@@ -116,6 +118,8 @@ VOID PatchGG_JP972(LPVOID param) {
             Patch((LPVOID)0x00A5C050, "\x90\x90\x90\x90\x90\x90\x90", 7);
             Patch((LPVOID)0x00A5CE80, "\xC3", 1);
             Patch((LPVOID)0x00A5CEB0, "\xC3", 1);
+            Patch((LPVOID)0x00D0CDCC, "JP.R7.995.00", 12);//version
+            Patch((LPVOID)0x00D48DCC, "lobby_west.gbin", 15);//tema
             Log("Patched GG check routines (JP 983)\r\n");
             return;
         }

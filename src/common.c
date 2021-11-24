@@ -12,7 +12,8 @@ int strcmp(LPCSTR dest, LPCSTR src) {
         cmp = *dest - *src;
         if (cmp > 0) {
             return 1;
-        } else if (cmp < 0) {
+        }
+        else if (cmp < 0) {
             return -1;
         }
     } while (*dest++ && *src++);
@@ -27,7 +28,8 @@ int memcmp(LPCVOID dest, LPCVOID src, size_t size) {
         cmp = *bdest++ - *bsrc++;
         if (cmp > 0) {
             return 1;
-        } else if (cmp < 0) {
+        }
+        else if (cmp < 0) {
             return -1;
         }
         --size;
@@ -35,9 +37,9 @@ int memcmp(LPCVOID dest, LPCVOID src, size_t size) {
     return 0;
 }
 
-PVOID memcpy(PVOID dest, VOID const *src, size_t size) {
-    BYTE *bdest = (BYTE *)dest;
-    BYTE const *bsrc = (BYTE const *)src;
+PVOID memcpy(PVOID dest, VOID const* src, size_t size) {
+    BYTE* bdest = (BYTE*)dest;
+    BYTE const* bsrc = (BYTE const*)src;
     while (size > 0) {
         *bdest++ = *bsrc++;
         --size;
@@ -138,7 +140,7 @@ VOID FatalError(PCHAR fmt, ...) {
     wvsprintfA(buffer, fmt, args);
     va_end(args);
 
-    MessageBoxA(HWND_DESKTOP, buffer, "rugburn", MB_OK|MB_ICONERROR);
+    MessageBoxA(HWND_DESKTOP, buffer, "rugburn", MB_OK | MB_ICONERROR);
     LocalFree(buffer);
     ExitProcess(1);
 }
@@ -151,7 +153,7 @@ VOID Warning(PCHAR fmt, ...) {
     wvsprintfA(buffer, fmt, args);
     va_end(args);
 
-    MessageBoxA(HWND_DESKTOP, buffer, "rugburn", MB_OK|MB_ICONWARNING);
+    MessageBoxA(HWND_DESKTOP, buffer, "rugburn", MB_OK | MB_ICONWARNING);
     LocalFree(buffer);
 }
 
@@ -210,7 +212,7 @@ VOID LogInit() {
 
 HMODULE LoadLib(LPCSTR szName) {
     HMODULE hModule;
-    
+
     hModule = LoadLibraryA(szName);
     if (hModule == NULL) {
         FatalError("Could not load module %s (%08x)", szName, GetLastError());
@@ -233,9 +235,11 @@ PVOID GetProc(HMODULE hModule, LPCSTR szName) {
 PANGYAVER DetectPangyaVersion() {
     if (FileExists("PangyaUS.ini")) {
         return PANGYA_US;
-    } else if (FileExists("PangyaJP.ini")) {
+    }
+    else if (FileExists("PangyaJP.ini")) {
         return PANGYA_JP;
-    } else if (FileExists("PangyaTH.ini")) {
+    }
+    else if (FileExists("PangyaTH.ini")) {
         return PANGYA_TH;
     }
     return PANGYA_US;

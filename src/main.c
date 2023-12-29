@@ -1,0 +1,171 @@
+/**
+ * This is a shim for ijl15.dll that hooks various things. Its objectives are:
+ *
+ *  - To fully disable GameGuard.
+ *  - To make using unmodified PangYa™ with custom servers easier.
+ *
+ * As much as possible is accomplished by hooking Windows APIs, making many of
+ * the patches portable across PangYa™ versions. The only bits that aren't
+ * implemented this way are a few bits related to disabling GameGuard, due to
+ * the fact that the process will attempt to kill itself if GameGuard is not
+ * present.
+ */
+
+#include "common.h"
+#include "config.h"
+#include "ijlfwd.h"
+#include "hooks/hooks.h"
+
+/**
+ * InitEnvironment configures the PANGYA_ARG environment to avoid needing to
+ * run the updater first.
+ */
+VOID InitEnvironment() {
+    PANGYAVER pangyaVersion;
+    PSTR szPangyaArg;
+
+    LoadJsonRugburnConfig();
+    pangyaVersion = DetectPangyaVersion();
+    szPangyaArg = GetPangyaArg(pangyaVersion);
+
+    if (SetEnvironmentVariableA("PANGYA_ARG", szPangyaArg) == 0) {
+        FatalError("Couldn't set PANGYA_ARG (%08x)", GetLastError());
+    }
+
+    LocalFree(szPangyaArg);
+}
+
+/**
+ * Patch is a small routine for patching arbitrary memory.
+ */
+VOID Patch(LPVOID dst, LPVOID src, DWORD size) {
+    DWORD OldProtection;
+    VirtualProtect(dst, size, PAGE_EXECUTE_READWRITE, &OldProtection);
+    memcpy(dst, src, size);
+    VirtualProtect(dst, size, OldProtection, &OldProtection);
+}
+
+/**
+ * Implements the GameGuard patches for Pangya US 852.00.
+ */
+VOID PatchGG_US852(LPVOID param) {
+    while(1) {
+        // TODO(john): Remove hardcoded addresses.
+        if (*(DWORD*)0x00A495E0 == 0x8F143D83) {
+            Patch((LPVOID)0x00A495E0, "\xC3\x90\x90\x90\x90\x90\x90", 7);
+            Patch((LPVOID)0x00A49670, "\xC3\x90\x90\x90\x90\x90\x90", 7);
+            Patch((LPVOID)0x00A49690, "\xC3\x90\x90\x90\x90\x90\x90", 7);
+            Patch((LPVOID)0x00A496B0, "\x90\x90\x90\x90\x90\x90\x90", 7);
+            Patch((LPVOID)0x00A496E0, "\xC3", 1);
+            Patch((LPVOID)0x00A49840, "\xC3", 1);
+            Log("Patched GG check routines (US 852)\r\n");
+            return;
+        }
+        if (*(DWORD*)0x0A5F097 == 4281238543) {
+            Patch((LPVOID)0x0A5F097, "\xE9\x2F\xFF\xFF\xFF\x90", 6);
+            Patch((LPVOID)0x0A49580, "\xC3\x90\x90\x90\x90\x90\x90", 7);
+            Patch((LPVOID)0x00A49670, "\xC3\x90\x90\x90\x90\x90\x90", 7);
+            Patch((LPVOID)0x00A49690, "\xC3\x90\x90\x90\x90\x90\x90", 7);
+            Patch((LPVOID)0x00A496B0, "\x90\x90\x90\x90\x90\x90\x90", 7);
+            Patch((LPVOID)0x00A496E0, "\xC3", 1);
+            Patch((LPVOID)0x00A49840, "\xC3", 1);
+            // pages that I change manually, More Adress By LuisMK
+            //Original page =>   http://pangya.gamerage.com/EntryPoint/etp.aspx
+            // Rewritten Page => http://127.0.0.1:8080/EntryPoint/etp.php
+            Patch((LPVOID)0x00D1CC1B, "\x31\x32\x37\x2E\x30\x2E\x30\x2E\x31\x3A\x38\x30\x38\x30\x2F\x45\x6E\x74\x72\x79\x50\x6F\x69\x6E\x74\x2F\x65\x74\x70\x2E\x70\x68\x70\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00", 46);
+            //Original page =>   http://pangya.gamerage.com/Gacha/Gacha.aspx
+           // Rewritten Page =>  http://127.0.0.1:8080/Gacha/Gacha.php
+            Patch((LPVOID)0x00CE9B4F, "\x31\x32\x37\x2E\x30\x2E\x30\x2E\x31\x3A\x38\x30\x38\x30\x2F\x47\x61\x63\x68\x61\x2F\x47\x61\x63\x68\x61\x2E\x70\x68\x70\x00\x00\x00\x00\x00\x00", 36);
+            Log("Patched GG check routines (US 824)\r\n");
+            return;
+        }
+		Sleep(5);
+    }
+}
+
+/**
+ * Implements the GameGuard patches for Pangya JP 972.00.
+ */
+VOID PatchGG_JP972(LPVOID param) {
+    while(1) {
+        // TODO(john): Remove hardcoded addresses.
+        if (*(DWORD*)0x00A5CD10 == 0x1BA43D83) {
+            Patch((LPVOID)0x00A5CD10, "\xC3\x90\x90\x90\x90\x90\x90", 7);
+            Patch((LPVOID)0x00A5CDA0, "\xC3\x90\x90\x90\x90\x90\x90", 7);
+            Patch((LPVOID)0x00A5CDC0, "\xC3\x90\x90\x90\x90\x90\x90", 7);
+            Patch((LPVOID)0x00A5CDE0, "\x90\x90\x90\x90\x90\x90\x90", 7);
+            Patch((LPVOID)0x00A5CE10, "\xC3", 1);
+            Patch((LPVOID)0x00A5CE40, "\xC3", 1);
+            Patch((LPVOID)0x00D0CDCC, "JP.R7.983.00", 12);
+            Log("Patched GG check routines (JP 972)\r\n");
+            return;
+        }
+        if (*(DWORD*)0x00A5CF80 == 0x1BA43D83) {
+            Patch((LPVOID)0x00A5CF80, "\xC3\x90\x90\x90\x90\x90\x90", 7);
+            Patch((LPVOID)0x00A5C010, "\xC3\x90\x90\x90\x90\x90\x90", 7);
+            Patch((LPVOID)0x00A5C030, "\xC3\x90\x90\x90\x90\x90\x90", 7);
+            Patch((LPVOID)0x00A5C050, "\x90\x90\x90\x90\x90\x90\x90", 7);
+            Patch((LPVOID)0x00A5CE80, "\xC3", 1);
+            Patch((LPVOID)0x00A5CEB0, "\xC3", 1);
+            Patch((LPVOID)0x00D0CDCC, "JP.R7.983.00", 12); 
+            Log("Patched GG check routines (JP 974)\r\n");
+            return;
+        }
+        if (*(DWORD*)0x00A5CF80 == 0x1C143D83) {
+            Patch((LPVOID)0x00A5CF80, "\xC3\x90\x90\x90\x90\x90\x90", 7);
+            Patch((LPVOID)0x00A5C010, "\xC3\x90\x90\x90\x90\x90\x90", 7);
+            Patch((LPVOID)0x00A5C030, "\xC3\x90\x90\x90\x90\x90\x90", 7);
+            Patch((LPVOID)0x00A5C050, "\x90\x90\x90\x90\x90\x90\x90", 7);
+            Patch((LPVOID)0x00A5CE80, "\xC3", 1);
+            Patch((LPVOID)0x00A5CEB0, "\xC3", 1);
+            Patch((LPVOID)0x00D0CDCC, "JP.R7.995.00", 12);//version
+            Patch((LPVOID)0x00D48DCC, "lobby_west.gbin", 15);//tema
+            Log("Patched GG check routines (JP 983)\r\n");
+            return;
+        }
+		Sleep(5);
+    }
+}
+
+/**
+ * Initializes the GameGuard patches based on game version.
+ */
+VOID InitGGPatch() {
+    PANGYAVER pangyaVersion;
+    LPTHREAD_START_ROUTINE patchThread = NULL;
+
+    // TODO(john): Should support more versions of PangYa.
+    pangyaVersion = DetectPangyaVersion();
+    switch (pangyaVersion) {
+    case PANGYA_US:
+        patchThread = (LPTHREAD_START_ROUTINE)PatchGG_US852;
+        break;
+    case PANGYA_JP:
+        patchThread = (LPTHREAD_START_ROUTINE)PatchGG_JP972;
+        break;
+    case PANGYA_TH:
+        MessageBoxA(NULL, "No GameGuard patch is available for PangyaTH.", "rugburn", MB_OK);
+        break;
+    }
+
+    if (!patchThread) {
+        MessageBoxA(NULL, "It looks like no patch exists for this version of PangYa™.\nThe game will likely exit a couple minutes after detecting GameGuard is not present.", "rugburn", MB_OK);
+        return;
+    }
+
+    CreateThread(0, 0, patchThread, 0, 0, 0);
+}
+
+extern BOOL STDCALL DllMain(HANDLE hInstance, DWORD dwReason, LPVOID reserved) {
+    if (dwReason != DLL_PROCESS_ATTACH) {
+        return TRUE;
+    }
+
+    LogInit();
+    InitGGPatch();
+    InitIJL15();
+    InitEnvironment();
+    InitHooks();
+
+    return TRUE;
+}

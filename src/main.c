@@ -21,18 +21,21 @@
  * run the updater first.
  */
 VOID InitEnvironment() {
-    PANGYAVER pangyaVersion;
-    PSTR szPangyaArg;
+// 	remove the comments if you want to open projectG without running 'update.exe' first
+
+	//PANGYAVER pangyaVersion;
+    //PSTR szPangyaArg;
 
     LoadJsonRugburnConfig();
-    pangyaVersion = DetectPangyaVersion();
-    szPangyaArg = GetPangyaArg(pangyaVersion);
+    //pangyaVersion = DetectPangyaVersion();
+    //szPangyaArg = GetPangyaArg(pangyaVersion);
 
-    if (SetEnvironmentVariableA("PANGYA_ARG", szPangyaArg) == 0) {
-        FatalError("Couldn't set PANGYA_ARG (%08x)", GetLastError());
-    }
+    //if (SetEnvironmentVariableA("PANGYA_ARG", szPangyaArg) == 0) {
+       // FatalError("Couldn't set PANGYA_ARG (%08x)", GetLastError());
+    //}
 
-    LocalFree(szPangyaArg);
+    //LocalFree(szPangyaArg);
+
 }
 
 /**
@@ -69,13 +72,6 @@ VOID PatchGG_US852(LPVOID param) {
             Patch((LPVOID)0x00A496B0, "\x90\x90\x90\x90\x90\x90\x90", 7);
             Patch((LPVOID)0x00A496E0, "\xC3", 1);
             Patch((LPVOID)0x00A49840, "\xC3", 1);
-            // pages that I change manually, More Adress By LuisMK
-            //Original page =>   http://pangya.gamerage.com/EntryPoint/etp.aspx
-            // Rewritten Page => http://127.0.0.1:8080/EntryPoint/etp.php
-            Patch((LPVOID)0x00D1CC1B, "\x31\x32\x37\x2E\x30\x2E\x30\x2E\x31\x3A\x38\x30\x38\x30\x2F\x45\x6E\x74\x72\x79\x50\x6F\x69\x6E\x74\x2F\x65\x74\x70\x2E\x70\x68\x70\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00", 46);
-            //Original page =>   http://pangya.gamerage.com/Gacha/Gacha.aspx
-           // Rewritten Page =>  http://127.0.0.1:8080/Gacha/Gacha.php
-            Patch((LPVOID)0x00CE9B4F, "\x31\x32\x37\x2E\x30\x2E\x30\x2E\x31\x3A\x38\x30\x38\x30\x2F\x47\x61\x63\x68\x61\x2F\x47\x61\x63\x68\x61\x2E\x70\x68\x70\x00\x00\x00\x00\x00\x00", 36);
             Log("Patched GG check routines (US 824)\r\n");
             return;
         }
@@ -118,8 +114,7 @@ VOID PatchGG_JP972(LPVOID param) {
             Patch((LPVOID)0x00A5C050, "\x90\x90\x90\x90\x90\x90\x90", 7);
             Patch((LPVOID)0x00A5CE80, "\xC3", 1);
             Patch((LPVOID)0x00A5CEB0, "\xC3", 1);
-            Patch((LPVOID)0x00D0CDCC, "JP.R7.995.00", 12);//version
-            Patch((LPVOID)0x00D48DCC, "lobby_west.gbin", 15);//tema
+            Patch((LPVOID)0x00C3D84F, "\xB6\x00\x00\x00", 4); //MULTI-CLIENT by LuisMK
             Log("Patched GG check routines (JP 983)\r\n");
             return;
         }
